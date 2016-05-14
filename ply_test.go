@@ -79,7 +79,7 @@ func TestWritePly(t *testing.T) {
 
   plyfile := PlyOpenForWriting("test.ply", nelems, elem_names, PLY_ASCII, &version)
 
-  // TODO return this to 2 vars
+  // Note that we don't need a variable for vertex_indices, but we do need to return vertex_indices. Otherwise, the garbage collector will remove them once GenerateVertexFaceData() returns.
   verts, faces, _ := GenerateVertexFaceData()
   vert_props, face_props := SetPlyProperties()
 
@@ -116,7 +116,6 @@ func TestWritePly(t *testing.T) {
   // close the PLY file
   PlyClose(plyfile)
 
-  fmt.Println("Done")
-
+  fmt.Println("Wrote PLY file.")
 
 }

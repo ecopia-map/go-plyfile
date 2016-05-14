@@ -140,8 +140,6 @@ func PlyPutElementSetup(plyfile CPlyFile, element_name string) {
 }
 
 func PlyPutElement(plyfile CPlyFile, element interface{}) {
-  fmt.Println(element)
-
   // write the passed in element to a buffer
   buf := new(bytes.Buffer)
   err := binary.Write(buf, binary.LittleEndian, element)
@@ -149,7 +147,6 @@ func PlyPutElement(plyfile CPlyFile, element interface{}) {
     panic(err)
   }
   element_bytes := buf.Bytes()
-  fmt.Println(len(element_bytes))
 
   // pass a pointer to the buffer
   C.ply_put_element(plyfile, unsafe.Pointer(&element_bytes[0]))
