@@ -158,3 +158,23 @@ func PlyPutElement(plyfile CPlyFile, element interface{}) {
 func PlyClose(plyfile CPlyFile) {
   C.ply_close(plyfile)
 }
+
+func pointerToInt(ptr uintptr) []byte {
+  size := unsafe.Sizeof(ptr)
+  buf := make([]byte, size)
+  switch size {
+  case 4:
+    binary.LittleEndian.PutUint32(buf, uint32(ptr))
+  case 8:
+    binary.LittleEndian.PutUint64(buf, uint64(ptr))
+  default:
+    panic(fmt.Sprintf("Error: unknown ptr size: %v", size))
+  }
+  return buf
+}
+
+func copyByteSliceToArray(barray *[8]byte, bslice []byte) {
+  for i := 0; i < len(bslice); i++ {
+    barray[i] = bslice[i]
+  }
+}

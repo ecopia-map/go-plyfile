@@ -12,13 +12,13 @@ type Vertex struct {
 
 type Face struct {
   intensity byte
-  nverts int32
-  verts [4]int32
+  nverts byte
+  verts [8]byte // maximum size array
 }
 
 type VertexIndices [4]int32
 
-func GenerateVertexFaceData() (verts []Vertex, faces []Face) {
+func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []VertexIndices) {
   verts = make([]Vertex, 8)
   faces = make([]Face, 6)
 
@@ -31,7 +31,7 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face) {
   verts[6] = Vertex{1.0, 1.0, 1.0}
   verts[7] = Vertex{0.0, 1.0, 1.0}
 
-  vertex_indices := make([]VertexIndices, 6)
+  vertex_indices = make([]VertexIndices, 6)
   vertex_indices[0] = VertexIndices{0, 1, 2, 3}
   vertex_indices[1] = VertexIndices{7, 6, 5, 4}
   vertex_indices[2] = VertexIndices{0, 4, 5, 1}
@@ -39,14 +39,20 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face) {
   vertex_indices[4] = VertexIndices{2, 6, 7, 3}
   vertex_indices[5] = VertexIndices{3, 7, 4, 0}
 
-  faces[0] = Face{'\001', 4, vertex_indices[0]}
-  faces[1] = Face{'\004', 4, vertex_indices[1]}
-  faces[2] = Face{'\010', 4, vertex_indices[2]}
-  faces[3] = Face{'\020', 4, vertex_indices[3]}
-  faces[4] = Face{'\144', 4, vertex_indices[4]}
-  faces[5] = Face{'\377', 4, vertex_indices[5]}
+  nil_array := [8]byte{0,0,0,0,0,0,0,0}
 
-  return verts, faces
+  faces[0] = Face{'\001', 4, nil_array}
+  faces[1] = Face{'\004', 4, nil_array}
+  faces[2] = Face{'\010', 4, nil_array}
+  faces[3] = Face{'\020', 4, nil_array}
+  faces[4] = Face{'\144', 4, nil_array}
+  faces[5] = Face{'\377', 4, nil_array}
+
+  for i := 0; i < 6; i++ {
+    copyByteSliceToArray(&faces[i].verts, pointerToInt(uintptr(unsafe.Pointer(&vertex_indices[i]))))
+  }
+
+  return verts, faces, vertex_indices
 }
 
 func SetPlyProperties() (vert_props []PlyProperty, face_props []PlyProperty) {
@@ -73,7 +79,8 @@ func TestWritePly(t *testing.T) {
 
   plyfile := PlyOpenForWriting("test.ply", nelems, elem_names, PLY_ASCII, &version)
 
-  verts, faces := GenerateVertexFaceData()
+  // TODO return this to 2 vars
+  verts, faces, _ := GenerateVertexFaceData()
   vert_props, face_props := SetPlyProperties()
 
   // Describe vertex properties
