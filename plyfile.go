@@ -2,6 +2,7 @@ package plyfile
 
 /*
 #cgo LDFLAGS: -L${SRCDIR}/lib -lplyfile
+#include <string.h>
 #include "lib/ply.h"
 */
 import "C"
@@ -66,6 +67,14 @@ func (prop *PlyProperty) ToC() CPlyProperty {
 }
 func (prop *PlyProperty) FromC(cprop CPlyProperty) {
   prop.name = C.GoString(cprop.name)
+  prop.external_type = int(cprop.external_type)
+  prop.internal_type = int(cprop.internal_type)
+  prop.offset = int(cprop.offset)
+
+  prop.is_list = int(cprop.is_list)
+  prop.count_external = int(cprop.count_external)
+  prop.count_internal = int(cprop.count_internal)
+  prop.count_offset = int(cprop.count_offset)
 }
 
 
@@ -101,6 +110,7 @@ type PlyFile struct {        /* description of PLY file */
 }
 
 type CPlyFile *C.struct_PlyFile
+type CPlyElement *C.struct_PlyElement
 
 func PlyOpenForWriting(filename string, nelems int, elem_names []string, file_type int, version *float32) CPlyFile {
 
@@ -113,6 +123,29 @@ func PlyOpenForWriting(filename string, nelems int, elem_names []string, file_ty
 
   return plyfile
 }
+
+func PlyOpenForReading(filename string) (CPlyFile, []string) {
+
+  plyfile := C.ply_open_and_read_header(C.CString(filename))
+
+  nelems := int(plyfile.nelems)
+
+  elements := make([]CPlyElement, nelems)
+  elem_names := make([]string, nelems)
+
+  for i := 0; i < nelems; i++ {
+    elements[i] = C.ply_get_element_by_index(plyfile, C.int(i))
+    elem_names[i] = C.GoString(elements[i].name)
+  }
+
+  return plyfile, elem_names
+}
+
+func PlyClose(plyfile CPlyFile) {
+  C.ply_close(plyfile)
+}
+
+/* Writing Functions */
 
 func PlyElementCount(plyfile CPlyFile, element_name string, nelems int) {
   C.ply_element_count(plyfile, C.CString(element_name), C.int(nelems))
@@ -152,9 +185,33 @@ func PlyPutElement(plyfile CPlyFile, element interface{}) {
   C.ply_put_element(plyfile, unsafe.Pointer(&element_bytes[0]))
 }
 
-func PlyClose(plyfile CPlyFile) {
-  C.ply_close(plyfile)
+/* Reading Functions */
+func PlyGetElementDescription(plyfile CPlyFile, element_name string) ([]PlyProperty, int) {
+  var nelems int
+  var nprops int
+
+  cnelems := C.int(nelems)
+  cnprops := C.int(nprops)
+
+  cplist_ptr := C.ply_get_element_description(plyfile, C.CString(element_name), &cnelems, &cnprops)
+
+  nprops = int(cnprops)
+
+  // convert cplist_ptr to a go slice of pointers
+  cplist_ptr_go := (*[1<<30]*CPlyProperty)(unsafe.Pointer(cplist_ptr))[:nprops]
+
+  // iterate through the slice of pointers, converting from CPlyProperty to PlyProperty
+  plist := make([]PlyProperty, nprops)
+  for i := 0; i < nprops; i++ {
+    tmp := *cplist_ptr_go[i]
+    plist[i].FromC(tmp)
+  }
+
+  return plist, int(cnelems)
 }
+
+
+
 
 func pointerToInt(ptr uintptr) []byte {
   size := unsafe.Sizeof(ptr)

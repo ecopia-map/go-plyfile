@@ -77,6 +77,8 @@ func TestWritePly(t *testing.T) {
   nelems = 2
   var version float32
 
+  fmt.Println("Writing PLY file 'test.ply'...")
+
   plyfile := PlyOpenForWriting("test.ply", nelems, elem_names, PLY_ASCII, &version)
 
   // Note that we don't need a variable for vertex_indices, but we do need to return vertex_indices. Otherwise, the garbage collector will remove them once GenerateVertexFaceData() returns.
@@ -117,5 +119,37 @@ func TestWritePly(t *testing.T) {
   PlyClose(plyfile)
 
   fmt.Println("Wrote PLY file.")
+}
+
+func TestReadPLY(t *testing.T) {
+  fmt.Println("Reading PLY file 'test.ply'...")
+
+  // open the PLY file for reading
+  plyfile, elem_names := PlyOpenForReading("test.ply")
+
+  // print what we found out about the file
+  fmt.Printf("version: %f\n", plyfile.version)
+  fmt.Printf("file_type: %d\n", plyfile.file_type)
+
+  // read each element
+  for _, name := range elem_names {
+
+    // get element description
+    plist, num_elems := PlyGetElementDescription(plyfile, name)
+
+    // print the name of the element, for debugging
+    fmt.Println("element", name, num_elems)
+
+    // TODO 
+
+    fmt.Println(plist)
+
+
+    //fmt.Println(i, name)
+  }
+
+
+  // close the PLY file
+  PlyClose(plyfile)
 
 }
