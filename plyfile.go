@@ -187,7 +187,7 @@ func PlyPutElement(plyfile CPlyFile, element interface{}) {
 }
 
 /* Reading Functions */
-func PlyGetElementDescription(plyfile CPlyFile, element_name string) ([]PlyProperty, int) {
+func PlyGetElementDescription(plyfile CPlyFile, element_name string) ([]PlyProperty, int, int) {
   var nelems int
   var nprops int
 
@@ -208,7 +208,7 @@ func PlyGetElementDescription(plyfile CPlyFile, element_name string) ([]PlyPrope
     plist[i].FromC(tmp)
   }
 
-  return plist, int(cnelems)
+  return plist, int(cnelems), int(cnprops)
 }
 
 func PlyGetProperty(plyfile CPlyFile, elem_name string, prop PlyProperty) {
@@ -233,88 +233,15 @@ func PlyGetElement(plyfile CPlyFile, element interface {}, size uintptr) {
     ptrval++
   }
 
-  /*
-  // create a new temporary element
-  elem_type := reflect.TypeOf(element)
-  fmt.Println(elem_type)
-  //elem_tmp := reflect.New(elem_type).Elem().Addr().Interface()
-  elem_tmp := reflect.New(elem_type).Elem().Addr() //.Elem().Addr().Interface()
-  fmt.Println(elem_tmp)
-  fmt.Printf("type: %T\n", elem_tmp)
-  */
+  // get the pointer to the memory location of the input element
+  elem_ptr := reflect.ValueOf(element).Elem().Addr().Interface()
 
-  // copy byte slice into temporary element
-  elem_ptr := reflect.ValueOf(element).Elem().Addr().Interface() // should be elem_ptr
-
+  // copy the byte slice into the memory of the input element
   r := bytes.NewReader(byteSlice)
   err := binary.Read(r, binary.LittleEndian, elem_ptr)
   if err != nil {
     panic(err)
   }
-
-  // set input element to be temporary element (perform deep copy)
-  /*
-  for i := 0; i < reflect.ValueOf(element).NumField(); i++ {
-    reflect.ValueOf(element).Ptr().Field(i).Set( reflect.ValueOf(elem_tmp).Field(i) )
-  }
-  */
-  //fmt.Printf("1", reflect.ValueOf(element).Interface())
-
-
-  //reflect.ValueOf(element) = elem_tmp
-
-
-
-  //var v reflect.TypeOf(element)
-  //fmt.Printf("%T\n\n", v)
-
-  /* OLDDD!!!!!!!!!!!!!! */
-  /*
-  element_value := reflect.ValueOf(&element).Elem()
-  fmt.Println(element_value.CanSet())
-
-
-  fmt.Println(element_value.Kind())
-  fmt.Println("before", element_value)
-  err := binary.Read(r, binary.LittleEndian, element_value)
-  if err != nil {
-    panic(err)
-  }
-  fmt.Println("after", element_value)
-
-  fmt.Println(element)
-  */
-  /*
-  t := reflect.ValueOf(element)
-  fmt.Printf("type %T\n\n", t)
-  fmt.Println("t is ", t)
-  */
-
-  /*
-  // copy byte slice into
-
-
-  fmt.Println(byteSlice)
-
-
-  t := reflect.New(reflect.TypeOf(element)).Elem().Interface()
-  fmt.Println(t)
-  fmt.Printf("Type: %T\n\n", t)
-
-  element = t
-  */
-
-  /*
-  buf := new(bytes.Buffer)
-  for i := 0; i < int(size); i++ {
-    buf.WriteByte(ptr[i])
-  }
-
-  */
-  //fmt.Println(size)
-
-  ///fmt.Println(element)
-
 }
 
 /* misc functions */

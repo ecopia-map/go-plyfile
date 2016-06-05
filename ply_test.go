@@ -6,14 +6,15 @@ import (
   "unsafe"
 )
 
+/* Exported Fields: All struct fields must be exported (capitalized) for use in the plyfile package! */
 type Vertex struct {
-  x, y, z float32
+  X, Y, Z float32
 }
 
 type Face struct {
-  intensity byte
-  nverts byte
-  verts [8]byte // maximum size array
+  Intensity byte
+  Nverts byte
+  Verts [8]byte // maximum size array
 }
 
 type VertexIndices [4]int32
@@ -49,7 +50,7 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
   faces[5] = Face{'\377', 4, nil_array}
 
   for i := 0; i < 6; i++ {
-    copyByteSliceToArray(&faces[i].verts, pointerToInt(uintptr(unsafe.Pointer(&vertex_indices[i]))))
+    copyByteSliceToArray(&faces[i].Verts, pointerToInt(uintptr(unsafe.Pointer(&vertex_indices[i]))))
   }
 
   return verts, faces, vertex_indices
@@ -57,13 +58,13 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 
 func SetPlyProperties() (vert_props []PlyProperty, face_props []PlyProperty) {
   vert_props = make([]PlyProperty, 3)
-  vert_props[0] = PlyProperty{"x", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.x)), 0, 0, 0, 0}
-  vert_props[1] = PlyProperty{"y", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.y)), 0, 0, 0, 0}
-  vert_props[2] = PlyProperty{"z", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.z)), 0, 0, 0, 0}
+  vert_props[0] = PlyProperty{"x", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.X)), 0, 0, 0, 0}
+  vert_props[1] = PlyProperty{"y", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.Y)), 0, 0, 0, 0}
+  vert_props[2] = PlyProperty{"z", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.Z)), 0, 0, 0, 0}
 
   face_props = make([]PlyProperty, 2)
-  face_props[0] = PlyProperty{"intensity", PLY_UCHAR, PLY_UCHAR, int(unsafe.Offsetof(Face{}.intensity)), 0, 0, 0, 0}
-  face_props[1] = PlyProperty{"vertex_indices", PLY_INT, PLY_INT, int(unsafe.Offsetof(Face{}.verts)), 1, PLY_UCHAR, PLY_UCHAR, int(unsafe.Offsetof(Face{}.nverts))}
+  face_props[0] = PlyProperty{"intensity", PLY_UCHAR, PLY_UCHAR, int(unsafe.Offsetof(Face{}.Intensity)), 0, 0, 0, 0}
+  face_props[1] = PlyProperty{"vertex_indices", PLY_INT, PLY_INT, int(unsafe.Offsetof(Face{}.Verts)), 1, PLY_UCHAR, PLY_UCHAR, int(unsafe.Offsetof(Face{}.Nverts))}
 
   return vert_props, face_props
 
@@ -124,6 +125,9 @@ func TestWritePly(t *testing.T) {
 func TestReadPLY(t *testing.T) {
   fmt.Println("Reading PLY file 'test.ply'...")
 
+  // setup properties
+  vert_props, face_props := SetPlyProperties()
+
   // open the PLY file for reading
   plyfile, elem_names := PlyOpenForReading("test.ply")
 
@@ -135,18 +139,66 @@ func TestReadPLY(t *testing.T) {
   for _, name := range elem_names {
 
     // get element description
-    plist, num_elems := PlyGetElementDescription(plyfile, name)
+    plist, num_elems, num_props := PlyGetElementDescription(plyfile, name)
 
     // print the name of the element, for debugging
     fmt.Println("element", name, num_elems)
 
-    // TODO 
+    if name == "vertex" {
+      // create a list to store all vertices
+      vlist := make([]Vertex, num_elems)
 
-    fmt.Println(plist)
+      /* set up for getting vertex elements
+      specifically, we are ensuring the 3 desirable properties of a vertex (x,,z) are returned.
+      */
+      PlyGetProperty(plyfile, name, vert_props[0])
+      PlyGetProperty(plyfile, name, vert_props[1])
+      PlyGetProperty(plyfile, name, vert_props[2])
+
+      // grab vertex elements
+      for i := 0; i < num_elems; i++ {
+        PlyGetElement(plyfile, &vlist[i], unsafe.Sizeof(Vertex{}))
+
+        // print out vertex for debugging
+        fmt.Printf("vertex: %g %g %g\n", vlist[i].X, vlist[i].Y, vlist[i].Z)
+
+      }
+    } else if name == "face" {
+      // create a list to hold all face elements
+      flist := make([]Face, num_elems)
+
+      /* set up for getting face elements (See above) */
+      PlyGetProperty(plyfile, name, face_props[0])
+      PlyGetProperty(plyfile, name, face_props[1])
+
+      // grab face elements
+      for i := 0; i < num_elems; i++ {
+        PlyGetElement(plyfile, &flist[i], unsafe.Sizeof(Face{}))
+
+        // print out vertex for debugging
+        /*
+        fmt.Printf("face: %d, list = ", flist[i].Intensity)
+
+        for j := 0; j < int(flist[i].Nverts); j++ {
+          fmt.Printf("%d ", flist[i].Verts[j])
+        }
+        fmt.Printf("\n")
+        */
+        fmt.Println(flist[i])
+      }
 
 
-    //fmt.Println(i, name)
+    }
+
+    for i := 0; i < num_props; i++ {
+      fmt.Println("property", plist[i].name)
+    }
+
   }
+
+  // comments TODO
+
+  // object info TODO
 
 
   // close the PLY file
