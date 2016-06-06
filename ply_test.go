@@ -145,6 +145,7 @@ func TestReadPLY(t *testing.T) {
     fmt.Println("element", name, num_elems)
 
     if name == "vertex" {
+
       // create a list to store all vertices
       vlist := make([]Vertex, num_elems)
 
@@ -160,7 +161,9 @@ func TestReadPLY(t *testing.T) {
         PlyGetElement(plyfile, &vlist[i], unsafe.Sizeof(Vertex{}))
 
         // print out vertex for debugging
+        /* TODO UNCOMMENT ME!!!
         fmt.Printf("vertex: %g %g %g\n", vlist[i].X, vlist[i].Y, vlist[i].Z)
+        */
 
       }
     } else if name == "face" {
@@ -175,7 +178,7 @@ func TestReadPLY(t *testing.T) {
       for i := 0; i < num_elems; i++ {
         PlyGetElement(plyfile, &flist[i], unsafe.Sizeof(Face{}))
 
-        // print out vertex for debugging
+        // print out faces for debugging
         /*
         fmt.Printf("face: %d, list = ", flist[i].Intensity)
 

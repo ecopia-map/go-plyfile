@@ -782,6 +782,109 @@ PlyFile *ply_read(FILE *fp, int *nelems, char ***elem_names)
   return (plyfile);
 }
 
+/******************************************************************************
+Given a filename, open the PLY file, read the PLY header information and return PlyFile struct.
+
+Entry:
+  filename - the given filename
+
+Exit:
+  returns a pointer to a PlyFile, used to refer to this file, or NULL if error
+******************************************************************************/
+PlyFile *ply_open_and_read_header (
+  char *filename
+)
+{
+  int i,j;
+  FILE *fp;
+  PlyFile *plyfile;
+  char *name;
+  int nwords;
+  char **words;
+  int found_format = 0;
+  PlyElement *elem;
+  char *orig_line;
+
+  /* tack on the extension .ply, if necessary */
+
+  name = (char *) myalloc (sizeof (char) * (strlen (filename) + 5));
+  strcpy (name, filename);
+  if (strlen (name) < 4 ||
+      strcmp (name + strlen (name) - 4, ".ply") != 0)
+      strcat (name, ".ply");
+
+  /* open the file for reading */
+
+  fp = fopen (name, "r");
+  if (fp == NULL)
+    return (NULL);
+
+  /* create temporary record */
+  plyfile = (PlyFile *) myalloc (sizeof (PlyFile));
+  plyfile->nelems = 0;
+  plyfile->comments = NULL;
+  plyfile->num_comments = 0;
+  plyfile->obj_info = NULL;
+  plyfile->num_obj_info = 0;
+  plyfile->fp = fp;
+  plyfile->other_elems = NULL;
+
+  /* read and parse the file's header */
+  words = get_words (fp, &nwords, &orig_line);
+  if (!words || !equal_strings (words[0], "ply"))
+  return (NULL);
+
+  while (words) {
+
+    /* parse words */
+
+    if (equal_strings (words[0], "format")) {
+      if (nwords != 3)
+        return (NULL);
+      if (equal_strings (words[1], "ascii"))
+        plyfile->file_type = PLY_ASCII;
+      else if (equal_strings (words[1], "binary_big_endian"))
+        plyfile->file_type = PLY_BINARY_BE;
+      else if (equal_strings (words[1], "binary_little_endian"))
+        plyfile->file_type = PLY_BINARY_LE;
+      else
+        return (NULL);
+      plyfile->version = atof (words[2]);
+      found_format = 1;
+    }
+    else if (equal_strings (words[0], "element"))
+      add_element (plyfile, words, nwords);
+    else if (equal_strings (words[0], "property"))
+      add_property (plyfile, words, nwords);
+    else if (equal_strings (words[0], "comment"))
+      add_comment (plyfile, orig_line);
+    else if (equal_strings (words[0], "obj_info"))
+      add_obj_info (plyfile, orig_line);
+    else if (equal_strings (words[0], "end_header"))
+      break;
+
+    /* free up words space */
+    free (words);
+
+    words = get_words (plyfile->fp, &nwords, &orig_line);
+  }
+
+  /* create tags for each property of each element, to be used */
+  /* later to say whether or not to store each property for the user */
+
+  for (i = 0; i < plyfile->nelems; i++) {
+    elem = plyfile->elems[i];
+    elem->store_prop = (char *) myalloc (sizeof (char) * elem->nprops);
+    for (j = 0; j < elem->nprops; j++)
+      elem->store_prop[j] = DONT_STORE_PROP;
+    elem->other_offset = NO_OTHER_PROPS; /* no "other" props by default */
+  }
+
+  /* return a pointer to the file's information */
+
+  return (plyfile);
+}
+
 
 /******************************************************************************
 Open a polygon file for reading.
@@ -836,6 +939,7 @@ PlyFile *ply_open_for_reading(
 
   return (plyfile);
 }
+
 
 
 /******************************************************************************
@@ -996,6 +1100,20 @@ void ply_get_element(PlyFile *plyfile, void *elem_ptr)
     binary_get_element (plyfile, (char *) elem_ptr);
 }
 
+
+/******************************************************************************
+Return a PlyElement pointer to an element in a given plyfile. Added by Alex Baden for interfacing with Go code.
+
+Entry:
+  plyfile  - file identifier
+  index - location of the requested element
+
+Exit:
+  returns a pointer to the PlyElement
+******************************************************************************/
+PlyElement *ply_get_element_by_index(PlyFile *plyfile, int index) {
+  return plyfile->elems[index];
+}
 
 /******************************************************************************
 Extract the comments from the header information of a PLY file.
