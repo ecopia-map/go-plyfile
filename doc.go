@@ -25,6 +25,28 @@ Acknowledgements
 
 A very big thanks is owed to Greg Turk for releasing his original plyfile code. Preserving the flexibility of his original package was a major goal for this project, and none of it would be possible without his well written and well documented C library and accompanying test file.
 
+Installation
+
+Run
+  go get github.com/alexbaden/go-plyfile
+
+The install will fail with the following error:
+  # github.com/alexbaden/go-plyfile
+  /usr/bin/ld: cannot find -lplyfile
+  collect2: error: ld returned 1 exit status# github.com/alexbaden/go-plyfile
+  /usr/bin/ld: cannot find -lplyfile
+  collect2: error: ld returned 1 exit status
+
+That's fine, you just need to compile the C code with the included makefile. Head over to the github.com/alexbaden/go-plyfile/lib
+directory:
+  cd $GOPATH/src/github.com/alexbaden/go-plyfile/lib
+Compile the C code using make.
+
+Now you can run go build and go install from the parent directory:
+  $GOPATH/src/github.com/alexbaden/go-plyfile
+
+From there, you should be good to go. But, just to make sure, run go test and verify the two tests (Write and Read) pass.
+
 Basics
 
 The structure of Turk's original code is preserved. The plyfile package makes heavy use of cgo to interface with Turk's code and use his original functions. Note that this means some memory is not tracked by the Go garbage collector. It is critical to properly close PLY files using the PlyClose function!
