@@ -14,7 +14,7 @@ type Vertex struct {
 type Face struct {
   Intensity byte
   Nverts byte
-  Verts [8]byte // maximum size array
+  Verts [16]byte // maximum size array
 }
 
 type VertexIndices [4]int32
@@ -40,7 +40,7 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
   vertex_indices[4] = VertexIndices{2, 6, 7, 3}
   vertex_indices[5] = VertexIndices{3, 7, 4, 0}
 
-  nil_array := [8]byte{0,0,0,0,0,0,0,0}
+  nil_array := [16]byte{0,0,0,0,0,0,0,0}
 
   faces[0] = Face{'\001', 4, nil_array}
   faces[1] = Face{'\004', 4, nil_array}
@@ -50,7 +50,8 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
   faces[5] = Face{'\377', 4, nil_array}
 
   for i := 0; i < 6; i++ {
-    copyByteSliceToArray(&faces[i].Verts, pointerToInt(uintptr(unsafe.Pointer(&vertex_indices[i]))))
+    //CopySliceToByteArray(&faces[i].Verts, PointerToInt(uintptr(unsafe.Pointer(&vertex_indices[i]))))
+    copy(faces[i].Verts[:], PointerToByteSlice(uintptr(unsafe.Pointer(&vertex_indices[i]))))
   }
 
   return verts, faces, vertex_indices
@@ -161,9 +162,7 @@ func TestReadPLY(t *testing.T) {
         PlyGetElement(plyfile, &vlist[i], unsafe.Sizeof(Vertex{}))
 
         // print out vertex for debugging
-        /* TODO UNCOMMENT ME!!!
         fmt.Printf("vertex: %g %g %g\n", vlist[i].X, vlist[i].Y, vlist[i].Z)
-        */
 
       }
     } else if name == "face" {
@@ -179,15 +178,15 @@ func TestReadPLY(t *testing.T) {
         PlyGetElement(plyfile, &flist[i], unsafe.Sizeof(Face{}))
 
         // print out faces for debugging
-        /*
         fmt.Printf("face: %d, list = ", flist[i].Intensity)
 
+        list := ConvertByteSliceToInt32(flist[i].Verts[:], int(flist[i].Nverts))
+
         for j := 0; j < int(flist[i].Nverts); j++ {
-          fmt.Printf("%d ", flist[i].Verts[j])
+          fmt.Printf("%d ", list[j])
         }
         fmt.Printf("\n")
-        */
-        fmt.Println(flist[i])
+
       }
 
 

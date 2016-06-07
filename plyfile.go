@@ -244,9 +244,10 @@ func PlyGetElement(plyfile CPlyFile, element interface {}, size uintptr) {
   }
 }
 
-/* misc functions */
+/* Util Functions */
 
-func pointerToInt(ptr uintptr) []byte {
+/* PointerToByteSlice takes a memory location and stores it in a byte slice, which is returned. Note that this function is typically very unsafe in Go programs. Use caution! */
+func PointerToByteSlice(ptr uintptr) []byte {
   size := unsafe.Sizeof(ptr)
   buf := make([]byte, size)
   switch size {
@@ -260,8 +261,33 @@ func pointerToInt(ptr uintptr) []byte {
   return buf
 }
 
-func copyByteSliceToArray(barray *[8]byte, bslice []byte) {
-  for i := 0; i < len(bslice); i++ {
-    barray[i] = bslice[i]
+/* ConvertByteSliceToInt32 takes a byte slice containing a memory location and a number of integer elements and returns an int32 array made up of the contents of the memory pointed to by the byte slice (to a maximum of num_elems elements). */
+func ConvertByteSliceToInt32(bslice []byte, num_elems int) (ret []int32) {
+  // create a buffer containing the memory location of interest
+  buf := bytes.NewBuffer(bslice)
+
+  // transcribe the memory location from the byte slice to a pointer
+  var tmp uint32
+  err := binary.Read(buf, binary.LittleEndian, &tmp)
+  if err != nil {
+    panic(err)
   }
+  ptr := uintptr(tmp)
+
+  // read the memory at ptr into a new byte slice
+  var tmpSlice = make([]byte, len(bslice))
+  for i := 0; i < len(tmpSlice); i++ {
+    tmpSlice[i] = byte(*(*C.char)(unsafe.Pointer(ptr)))
+    ptr++
+  }
+
+  // create a return slice and read the new byte slice into it
+  ret = make([]int32, num_elems)
+  buf = bytes.NewBuffer(tmpSlice)
+  err = binary.Read(buf, binary.LittleEndian, ret)
+  if err != nil {
+    panic(err)
+  }
+
+  return
 }
