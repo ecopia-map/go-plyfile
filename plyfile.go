@@ -1,3 +1,19 @@
+/*
+Copyright 2016 Alex Baden
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package plyfile
 
 /*
@@ -15,7 +31,7 @@ import (
 	"reflect"
 )
 
-// PLY definitions
+// PLY definitions, for consistency with C code.
 const (
 	PLY_ASCII     = 1 /* ascii PLY file */
 	PLY_BINARY_BE = 2 /* binary PLY file, big endian */
@@ -121,31 +137,38 @@ func PlyClose(plyfile CPlyFile) {
 
 /* Writing Functions */
 
+/* PlyElementCount specifies the number of elements that are about to be written. */
 func PlyElementCount(plyfile CPlyFile, element_name string, nelems int) {
 	C.ply_element_count(plyfile, C.CString(element_name), C.int(nelems))
 }
 
+/* PlyDescribeProperty describes a property of an element. */
 func PlyDescribeProperty(plyfile CPlyFile, element_name string, prop PlyProperty) {
 	propertyptr := prop.ToC()
 	C.ply_describe_property(plyfile, C.CString(element_name), &propertyptr)
 }
 
+/* PlyPutComment writes the specified comment into the PLY file header. */
 func PlyPutComment(plyfile CPlyFile, comment string) {
 	C.ply_put_comment(plyfile, C.CString(comment))
 }
 
+/* PlyPutObjInfo writes the specified object info string into the PLY file header. */
 func PlyPutObjInfo(plyfile CPlyFile, obj_info string) {
 	C.ply_put_obj_info(plyfile, C.CString(obj_info))
 }
 
+/* PlyHeaderComplete signals that the PLY header is fully described and flushes it to disk. */
 func PlyHeaderComplete(plyfile CPlyFile) {
 	C.ply_header_complete(plyfile)
 }
 
+/* PlyPutElementSetup specifies which element is about to be written. This should be called prior to PlyPutElement. */
 func PlyPutElementSetup(plyfile CPlyFile, element_name string) {
 	C.ply_put_element_setup(plyfile, C.CString(element_name))
 }
 
+/* PlyPutElement writes an element to the PLY file. The type of element is specified by PlyPutElementSetup, which must be called first. */
 func PlyPutElement(plyfile CPlyFile, element interface{}) {
 	// write the passed in element to a buffer
 	buf := new(bytes.Buffer)
@@ -160,6 +183,8 @@ func PlyPutElement(plyfile CPlyFile, element interface{}) {
 }
 
 /* Reading Functions */
+
+/* PlyGetElementDescription reads information about a specified element from an open PLY file. */
 func PlyGetElementDescription(plyfile CPlyFile, element_name string) ([]PlyProperty, int, int) {
 	var nelems int
 	var nprops int
@@ -184,11 +209,13 @@ func PlyGetElementDescription(plyfile CPlyFile, element_name string) ([]PlyPrope
 	return plist, int(cnelems), int(cnprops)
 }
 
+/* PlyGetProperty specifies a property of an element that should be returned with a call to PlyGetElement. Note that PlyGetProperty must be called before PlyGetElement, and can be called multiple times (for each PLYProperty an element contains). */
 func PlyGetProperty(plyfile CPlyFile, elem_name string, prop PlyProperty) {
 	cprop := prop.ToC()
 	C.ply_get_property(plyfile, C.CString(elem_name), &cprop)
 }
 
+/* PlyGetElement retrieves an element from the PLY file. The properties returned must be specified by PlyGetProperty before calling PlyGetElement. */
 func PlyGetElement(plyfile CPlyFile, element interface{}, size uintptr) {
 
 	var ptr C.char
@@ -217,6 +244,7 @@ func PlyGetElement(plyfile CPlyFile, element interface{}, size uintptr) {
 	}
 }
 
+/* PlyGetComments returns the comments contained in the open PLY file header. */
 func PlyGetComments(plyfile CPlyFile) []string {
 	var cptr **C.char
 	var cnum_comments C.int
@@ -236,6 +264,7 @@ func PlyGetComments(plyfile CPlyFile) []string {
 	return comments
 }
 
+/* PlyGetObjInfo returns the object info contained in the open PLY file header. */
 func PlyGetObjInfo(plyfile CPlyFile) []string {
 	var cptr **C.char
 	var cnum_obj_info C.int

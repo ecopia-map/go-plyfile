@@ -6,7 +6,8 @@ import (
 	"unsafe"
 )
 
-/* Exported Fields: All struct fields must be exported (capitalized) for use in the plyfile package! */
+/* Exported Fields Note: All struct fields must be exported (capitalized) for use in the plyfile package! */
+
 type Vertex struct {
 	X, Y, Z float32
 }
@@ -56,6 +57,8 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 	return verts, faces, vertex_indices
 }
 
+/* Testing Functions */
+
 func SetPlyProperties() (vert_props []PlyProperty, face_props []PlyProperty) {
 	vert_props = make([]PlyProperty, 3)
 	vert_props[0] = PlyProperty{"x", PLY_FLOAT, PLY_FLOAT, int(unsafe.Offsetof(Vertex{}.X)), 0, 0, 0, 0}
@@ -74,13 +77,12 @@ func TestWritePly(t *testing.T) {
 	elem_names := make([]string, 2)
 	elem_names[0] = "vertex"
 	elem_names[1] = "face"
-	var nelems int
-	nelems = 2
+
 	var version float32
 
 	fmt.Println("Writing PLY file 'test.ply'...")
 
-	plyfile := PlyOpenForWriting("test.ply", nelems, elem_names, PLY_ASCII, &version)
+	plyfile := PlyOpenForWriting("test.ply", len(elem_names), elem_names, PLY_ASCII, &version)
 
 	// Note that we don't need a variable for vertex_indices, but we do need to return vertex_indices. Otherwise, the garbage collector will remove them once GenerateVertexFaceData() returns.
 	verts, faces, _ := GenerateVertexFaceData()
