@@ -244,6 +244,44 @@ func PlyGetElement(plyfile CPlyFile, element interface {}, size uintptr) {
   }
 }
 
+func PlyGetComments(plyfile CPlyFile) []string {
+  var cptr **C.char
+  var cnum_comments C.int
+  cptr = C.ply_get_comments(plyfile, &cnum_comments)
+
+  num_comments := int(cnum_comments)
+
+  // convert cptr to a go slice of pointers
+  cstring_list := (*[1<<30]*C.char)(unsafe.Pointer(cptr))[:num_comments]
+
+  comments := make([]string, num_comments)
+
+  for i := 0; i < num_comments; i++ {
+    comments[i] = C.GoString(cstring_list[i])
+  }
+
+  return comments
+}
+
+func PlyGetObjInfo(plyfile CPlyFile) []string {
+  var cptr **C.char
+  var cnum_obj_info C.int
+  cptr = C.ply_get_obj_info(plyfile, &cnum_obj_info)
+
+  num_obj_info := int(cnum_obj_info)
+
+  // convert cptr to a go slice of pointers
+  cstring_list := (*[1<<30]*C.char)(unsafe.Pointer(cptr))[:num_obj_info]
+
+  obj_info := make([]string, num_obj_info)
+
+  for i := 0; i < num_obj_info; i++ {
+    obj_info[i] = C.GoString(cstring_list[i])
+  }
+
+  return obj_info
+}
+
 /* Util Functions */
 
 /* PointerToByteSlice takes a memory location and stores it in a byte slice, which is returned. Note that this function is typically very unsafe in Go programs. Use caution! */

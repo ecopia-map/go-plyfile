@@ -198,10 +198,17 @@ func TestReadPLY(t *testing.T) {
 
   }
 
-  // comments TODO
+  // grab and print comments in the file
+  comments := PlyGetComments(plyfile)
+  for _, comment := range comments {
+    fmt.Println("comment =", comment)
+  }
 
-  // object info TODO
-
+  // grab and print object information
+  objinfo := PlyGetObjInfo(plyfile)
+  for _, text := range objinfo {
+    fmt.Println("obj_info = ", text)
+  }
 
   // close the PLY file
   PlyClose(plyfile)
