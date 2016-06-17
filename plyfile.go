@@ -58,42 +58,42 @@ const (
 
 type CPlyProperty C.struct_PlyProperty
 type PlyProperty struct {
-	name          string /* property name */
-	external_type int    /* file's data type */
-	internal_type int    /* program's data type */
-	offset        int    /* offset bytes of prop in a struct */
+	Name          string /* property name */
+	External_type int    /* file's data type */
+	Internal_type int    /* program's data type */
+	Offset        int    /* offset bytes of prop in a struct */
 
-	is_list        int /* 1 = list, 0 = scalar */
-	count_external int /* file's count type */
-	count_internal int /* program's count type */
-	count_offset   int /* offset byte for list count */
+	Is_list        int /* 1 = list, 0 = scalar */
+	Count_external int /* file's count type */
+	Count_internal int /* program's count type */
+	Count_offset   int /* offset byte for list count */
 }
 
 /* ToC converts a PlyProperty go structure to a PlyProperty C structure for passing to C functions */
 func (prop *PlyProperty) ToC() CPlyProperty {
 	var cprop CPlyProperty
-	cprop.name = C.CString(prop.name)
-	cprop.external_type = C.int(prop.external_type)
-	cprop.internal_type = C.int(prop.internal_type)
-	cprop.offset = C.int(prop.offset)
-	cprop.is_list = C.int(prop.is_list)
-	cprop.count_external = C.int(prop.count_external)
-	cprop.count_internal = C.int(prop.count_internal)
-	cprop.count_offset = C.int(prop.count_offset)
+	cprop.name = C.CString(prop.Name)
+	cprop.external_type = C.int(prop.External_type)
+	cprop.internal_type = C.int(prop.Internal_type)
+	cprop.offset = C.int(prop.Offset)
+	cprop.is_list = C.int(prop.Is_list)
+	cprop.count_external = C.int(prop.Count_external)
+	cprop.count_internal = C.int(prop.Count_internal)
+	cprop.count_offset = C.int(prop.Count_offset)
 	return cprop
 }
 
 /* FromC converts a PlyProperty C structure (passed from a C function to the Go program) to a Go structure */
 func (prop *PlyProperty) FromC(cprop CPlyProperty) {
-	prop.name = C.GoString(cprop.name)
-	prop.external_type = int(cprop.external_type)
-	prop.internal_type = int(cprop.internal_type)
-	prop.offset = int(cprop.offset)
+	prop.Name = C.GoString(cprop.name)
+	prop.External_type = int(cprop.external_type)
+	prop.Internal_type = int(cprop.internal_type)
+	prop.Offset = int(cprop.offset)
 
-	prop.is_list = int(cprop.is_list)
-	prop.count_external = int(cprop.count_external)
-	prop.count_internal = int(cprop.count_internal)
-	prop.count_offset = int(cprop.count_offset)
+	prop.Is_list = int(cprop.is_list)
+	prop.Count_external = int(cprop.count_external)
+	prop.Count_internal = int(cprop.count_internal)
+	prop.Count_offset = int(cprop.count_offset)
 }
 
 type CPlyFile *C.struct_PlyFile

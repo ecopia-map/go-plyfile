@@ -193,7 +193,7 @@ func TestReadPLY(t *testing.T) {
 		}
 
 		for i := 0; i < num_props; i++ {
-			fmt.Println("property", plist[i].name)
+			fmt.Println("property", plist[i].Name)
 		}
 
 	}
