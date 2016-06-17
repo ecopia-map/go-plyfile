@@ -82,44 +82,44 @@ func TestWritePly(t *testing.T) {
 
 	fmt.Println("Writing PLY file 'test.ply'...")
 
-	plyfile := PlyOpenForWriting("test.ply", len(elem_names), elem_names, PLY_ASCII, &version)
+	cplyfile := PlyOpenForWriting("test.ply", len(elem_names), elem_names, PLY_ASCII, &version)
 
 	// Note that we don't need a variable for vertex_indices, but we do need to return vertex_indices. Otherwise, the garbage collector will remove them once GenerateVertexFaceData() returns.
 	verts, faces, _ := GenerateVertexFaceData()
 	vert_props, face_props := SetPlyProperties()
 
 	// Describe vertex properties
-	PlyElementCount(plyfile, "vertex", len(verts))
-	PlyDescribeProperty(plyfile, "vertex", vert_props[0])
-	PlyDescribeProperty(plyfile, "vertex", vert_props[1])
-	PlyDescribeProperty(plyfile, "vertex", vert_props[2])
+	PlyElementCount(cplyfile, "vertex", len(verts))
+	PlyDescribeProperty(cplyfile, "vertex", vert_props[0])
+	PlyDescribeProperty(cplyfile, "vertex", vert_props[1])
+	PlyDescribeProperty(cplyfile, "vertex", vert_props[2])
 
 	// Describe face properties
-	PlyElementCount(plyfile, "face", len(faces))
-	PlyDescribeProperty(plyfile, "face", face_props[0])
-	PlyDescribeProperty(plyfile, "face", face_props[1])
+	PlyElementCount(cplyfile, "face", len(faces))
+	PlyDescribeProperty(cplyfile, "face", face_props[0])
+	PlyDescribeProperty(cplyfile, "face", face_props[1])
 
 	// Add a comment and an object information field
-	PlyPutComment(plyfile, "go author: Alex Baden, c author: Greg Turk")
-	PlyPutObjInfo(plyfile, "random information")
+	PlyPutComment(cplyfile, "go author: Alex Baden, c author: Greg Turk")
+	PlyPutObjInfo(cplyfile, "random information")
 
 	// Finish writing header
-	PlyHeaderComplete(plyfile)
+	PlyHeaderComplete(cplyfile)
 
 	// Setup and write vertex elements
-	PlyPutElementSetup(plyfile, "vertex")
+	PlyPutElementSetup(cplyfile, "vertex")
 	for _, vertex := range verts {
-		PlyPutElement(plyfile, vertex)
+		PlyPutElement(cplyfile, vertex)
 	}
 
 	// Setup and write face elements
-	PlyPutElementSetup(plyfile, "face")
+	PlyPutElementSetup(cplyfile, "face")
 	for _, face := range faces {
-		PlyPutElement(plyfile, face)
+		PlyPutElement(cplyfile, face)
 	}
 
 	// close the PLY file
-	PlyClose(plyfile)
+	PlyClose(cplyfile)
 
 	fmt.Println("Wrote PLY file.")
 }
@@ -131,17 +131,17 @@ func TestReadPLY(t *testing.T) {
 	vert_props, face_props := SetPlyProperties()
 
 	// open the PLY file for reading
-	plyfile, elem_names := PlyOpenForReading("test.ply")
+	cplyfile, elem_names := PlyOpenForReading("test.ply")
 
 	// print what we found out about the file
-	fmt.Printf("version: %f\n", plyfile.version)
-	fmt.Printf("file_type: %d\n", plyfile.file_type)
+	fmt.Printf("version: %f\n", cplyfile.version)
+	fmt.Printf("file_type: %d\n", cplyfile.file_type)
 
 	// read each element
 	for _, name := range elem_names {
 
 		// get element description
-		plist, num_elems, num_props := PlyGetElementDescription(plyfile, name)
+		plist, num_elems, num_props := PlyGetElementDescription(cplyfile, name)
 
 		// print the name of the element, for debugging
 		fmt.Println("element", name, num_elems)
@@ -154,13 +154,13 @@ func TestReadPLY(t *testing.T) {
 			/* set up for getting vertex elements
 			   specifically, we are ensuring the 3 desirable properties of a vertex (x,,z) are returned.
 			*/
-			PlyGetProperty(plyfile, name, vert_props[0])
-			PlyGetProperty(plyfile, name, vert_props[1])
-			PlyGetProperty(plyfile, name, vert_props[2])
+			PlyGetProperty(cplyfile, name, vert_props[0])
+			PlyGetProperty(cplyfile, name, vert_props[1])
+			PlyGetProperty(cplyfile, name, vert_props[2])
 
 			// grab vertex elements
 			for i := 0; i < num_elems; i++ {
-				PlyGetElement(plyfile, &vlist[i], unsafe.Sizeof(Vertex{}))
+				PlyGetElement(cplyfile, &vlist[i], unsafe.Sizeof(Vertex{}))
 
 				// print out vertex for debugging
 				fmt.Printf("vertex: %g %g %g\n", vlist[i].X, vlist[i].Y, vlist[i].Z)
@@ -171,12 +171,12 @@ func TestReadPLY(t *testing.T) {
 			flist := make([]Face, num_elems)
 
 			/* set up for getting face elements (See above) */
-			PlyGetProperty(plyfile, name, face_props[0])
-			PlyGetProperty(plyfile, name, face_props[1])
+			PlyGetProperty(cplyfile, name, face_props[0])
+			PlyGetProperty(cplyfile, name, face_props[1])
 
 			// grab face elements
 			for i := 0; i < num_elems; i++ {
-				PlyGetElement(plyfile, &flist[i], unsafe.Sizeof(Face{}))
+				PlyGetElement(cplyfile, &flist[i], unsafe.Sizeof(Face{}))
 
 				// print out faces for debugging
 				fmt.Printf("face: %d, list = ", flist[i].Intensity)
@@ -199,18 +199,18 @@ func TestReadPLY(t *testing.T) {
 	}
 
 	// grab and print comments in the file
-	comments := PlyGetComments(plyfile)
+	comments := PlyGetComments(cplyfile)
 	for _, comment := range comments {
 		fmt.Println("comment =", comment)
 	}
 
 	// grab and print object information
-	objinfo := PlyGetObjInfo(plyfile)
+	objinfo := PlyGetObjInfo(cplyfile)
 	for _, text := range objinfo {
 		fmt.Println("obj_info = ", text)
 	}
 
 	// close the PLY file
-	PlyClose(plyfile)
+	PlyClose(cplyfile)
 
 }
