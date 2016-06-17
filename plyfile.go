@@ -218,9 +218,29 @@ func PlyGetProperty(plyfile CPlyFile, elem_name string, prop PlyProperty) {
 /* PlyGetElement retrieves an element from the PLY file. The properties returned must be specified by PlyGetProperty before calling PlyGetElement. */
 func PlyGetElement(plyfile CPlyFile, element interface{}, size uintptr) {
 
-	var ptr C.char
+	//s := make([]byte, 256)
+//C.fooGetString((*C.char)(unsafe.Pointer(&s[0])), C.int(len(s)))
+	//
 
-	C.ply_get_element(plyfile, unsafe.Pointer(&ptr))
+	// memory should be allocated before calling PlyGetElement
+	buf := make([]byte, size)
+	C.ply_get_element(plyfile, unsafe.Pointer(&buf[0]))
+
+	// get the pointer to the memory location of the input element
+	elem_ptr := reflect.ValueOf(element).Elem().Addr().Interface()
+
+	// copy the byte slice into the memory of the input element
+	r := bytes.NewReader(buf)
+	err := binary.Read(r, binary.LittleEndian, elem_ptr)
+	if err != nil {
+		panic(err)
+	}
+
+
+	/*
+	var ptr *C.char
+
+	C.ply_get_element(plyfile, unsafe.Pointer(ptr))
 	//fmt.Println(&ptr)
 
 	// convert the pointer into a number, so we can do pointer arithmetic
@@ -242,6 +262,7 @@ func PlyGetElement(plyfile CPlyFile, element interface{}, size uintptr) {
 	if err != nil {
 		panic(err)
 	}
+	*/
 }
 
 /* PlyGetComments returns the comments contained in the open PLY file header. */
