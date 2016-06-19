@@ -1,5 +1,7 @@
 # go-plyfile
 
+[![GoDoc](https://godoc.org/github.com/alexbaden/go-plyfile?status.svg)](https://godoc.org/github.com/alexbaden/go-plyfile)
+
 Package plyfile provides functions for reading and writing PLY files. The package uses the C plyfile library, originally developed by Greg Turk and released in February 1994. All Go code is provided under the Apache 2.0 license. Greg Turk's code has a separate license (see lib folder).
 
 Pull requests, issues, comments, and feedback in general is always welcome.
@@ -29,7 +31,7 @@ That's fine, you just need to compile the C code with the included makefile. Hea
 
 Now you can run `go build` and `go install` from the parent directory (`$GOPATH/src/github.com/alexbaden/go-plyfile`).
 
-From there, you should be good to go. But, just to make sure, run `go test` and verify the two tests (Write and Read) pass. 
+From there, you should be good to go. But, just to make sure, run `go test` and verify the two tests (Write and Read) pass.
 
 ## Basics
 
