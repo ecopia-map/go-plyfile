@@ -285,6 +285,44 @@ func PointerToByteSlice(ptr uintptr) []byte {
 	return buf
 }
 
+// TODO doc
+func ByteSliceToPointer(bslice []byte) (ptr uintptr) {
+	size := unsafe.Sizeof(ptr)
+	switch size {
+	case 4:
+		ptr = uintptr(binary.LittleEndian.Uint32(bslice))
+	case 8:
+		ptr = uintptr(binary.LittleEndian.Uint64(bslice))
+	default:
+		panic(fmt.Sprintf("Error: unknown ptr size: %v", size))
+	}
+	return ptr
+}
+
+// TODO doc
+func ReadPLYList(ptr uintptr, num_elems int) []int32 {
+
+	// read the memory at ptr into a new byte slice
+	var numBytes int
+	numBytes = num_elems*int(unsafe.Sizeof(ptr))
+
+	var tmpSlice = make([]byte, numBytes)
+	for i := 0; i < len(tmpSlice); i++ {
+		tmpSlice[i] = byte(*(*C.char)(unsafe.Pointer(ptr)))
+		ptr++
+	}
+
+	// create a return slice and read the new byte slice into it
+	ret := make([]int32, num_elems)
+	buf := bytes.NewBuffer(tmpSlice)
+	err := binary.Read(buf, binary.LittleEndian, ret)
+	if err != nil {
+		panic(err)
+	}
+
+	return ret
+}
+
 /* ConvertByteSliceToInt32 takes a byte slice containing a memory location and a number of integer elements and returns an int32 array made up of the contents of the memory pointed to by the byte slice (to a maximum of num_elems elements). */
 func ConvertByteSliceToInt32(bslice []byte, num_elems int) (ret []int32) {
 	// create a buffer containing the memory location of interest

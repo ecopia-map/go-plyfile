@@ -15,7 +15,8 @@ type Vertex struct {
 type Face struct {
 	Intensity byte
 	Nverts    byte
-	Verts     [16]byte // maximum size array
+	//Verts 		*int32 // ptr to memory location
+	Verts     [8]byte // maximum size array
 }
 
 type VertexIndices [4]int32
@@ -41,6 +42,7 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 	vertex_indices[4] = VertexIndices{2, 6, 7, 3}
 	vertex_indices[5] = VertexIndices{3, 7, 4, 0}
 
+	/*
 	nil_array := [16]byte{0, 0, 0, 0, 0, 0, 0, 0}
 
 	faces[0] = Face{'\001', 4, nil_array}
@@ -52,6 +54,19 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 
 	for i := 0; i < 6; i++ {
 		copy(faces[i].Verts[:], PointerToByteSlice(uintptr(unsafe.Pointer(&vertex_indices[i]))))
+	}
+	*/
+
+	faces[0] = Face{'\001', 4, [8]byte{}}
+	faces[1] = Face{'\004', 4, [8]byte{}}
+	faces[2] = Face{'\010', 4, [8]byte{}}
+	faces[3] = Face{'\020', 4, [8]byte{}}
+	faces[4] = Face{'\144', 4, [8]byte{}}
+	faces[5] = Face{'\377', 4, [8]byte{}}
+	for i := 0; i < 6; i++ {
+		copy(faces[i].Verts[:], PointerToByteSlice(uintptr(unsafe.Pointer(&vertex_indices[i]))))
+
+		//faces[i].Verts = uintptr(unsafe.Pointer(&vertex_indices[i]))
 	}
 
 	return verts, faces, vertex_indices
@@ -181,7 +196,13 @@ func TestReadPLY(t *testing.T) {
 				// print out faces for debugging
 				fmt.Printf("face: %d, list = ", flist[i].Intensity)
 
-				list := ConvertByteSliceToInt32(flist[i].Verts[:], int(flist[i].Nverts))
+
+				listptr := ByteSliceToPointer(flist[i].Verts[:])
+
+				list :=
+				ReadPLYList(listptr, int(flist[i].Nverts))
+				//var list []byte 
+				//list := ConvertByteSliceToInt32(flist[i].Verts[:], int(flist[i].Nverts))
 
 				for j := 0; j < int(flist[i].Nverts); j++ {
 					fmt.Printf("%d ", list[j])
