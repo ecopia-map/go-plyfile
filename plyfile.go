@@ -25,9 +25,9 @@ import "C"
 
 import (
 	"bytes"
-	"unsafe"
 	"encoding/binary"
 	"fmt"
+	"unsafe"
 )
 
 // PLY definitions, for consistency with C code.
@@ -305,7 +305,7 @@ func ReadPLYListInt32(ptr uintptr, num_elems int) []int32 {
 
 	// read the memory at ptr into a new byte slice
 	var numBytes int
-	numBytes = num_elems*int(unsafe.Sizeof(ptr))
+	numBytes = num_elems * int(unsafe.Sizeof(ptr))
 
 	var tmpSlice = make([]byte, numBytes)
 	for i := 0; i < len(tmpSlice); i++ {

@@ -16,7 +16,7 @@ type Face struct {
 	Intensity byte
 	Nverts    byte
 	//Verts 		*int32 // ptr to memory location
-	Verts     [8]byte // maximum size array
+	Verts [8]byte // maximum size array
 }
 
 type VertexIndices [4]int32
@@ -187,7 +187,7 @@ func TestReadPLY(t *testing.T) {
 				/* Here we handle arbitrary sized arrays. We first convert the byte slice storing the location of the C memory to a pointer. Next, we read from C memory space, creating a byte slice, then convert the byte slice to a int32 slice using the ReadPLYListInt32 function. */
 				listptr := ByteSliceToPointer(flist[i].Verts[:])
 				list :=
-				ReadPLYListInt32(listptr, int(flist[i].Nverts))
+					ReadPLYListInt32(listptr, int(flist[i].Nverts))
 
 				for j := 0; j < int(flist[i].Nverts); j++ {
 					fmt.Printf("%d ", list[j])
