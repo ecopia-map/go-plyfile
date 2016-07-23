@@ -169,6 +169,7 @@ func PlyPutElementSetup(plyfile CPlyFile, element_name string) {
 
 /* PlyPutElement writes an element to the PLY file. The type of element is specified by PlyPutElementSetup, which must be called first. */
 func PlyPutElement(plyfile CPlyFile, element interface{}) {
+
 	// write the passed in element to a buffer
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, element)
@@ -285,7 +286,7 @@ func PointerToByteSlice(ptr uintptr) []byte {
 	return buf
 }
 
-// TODO doc
+/* ByteSliceToPointer takes a byte slice containing a pointer (necessary for passing pointers back and forth to C programs as part of a struct) and reads the pointer, returning it as a uintptr. Note that typically this function will be called on byte arrays, and slicing the array ('[:]') when passing it to the function will be necessary. */
 func ByteSliceToPointer(bslice []byte) (ptr uintptr) {
 	size := unsafe.Sizeof(ptr)
 	switch size {
@@ -299,8 +300,8 @@ func ByteSliceToPointer(bslice []byte) (ptr uintptr) {
 	return ptr
 }
 
-// TODO doc
-func ReadPLYList(ptr uintptr, num_elems int) []int32 {
+/* ReadPLYListInt32 takes as input a pointer (which should be pointing to C memory) and a number of elements and reads an arbitrary size array into an int32 slice. */
+func ReadPLYListInt32(ptr uintptr, num_elems int) []int32 {
 
 	// read the memory at ptr into a new byte slice
 	var numBytes int

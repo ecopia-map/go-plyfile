@@ -34,6 +34,11 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 	verts[6] = Vertex{1.0, 1.0, 1.0}
 	verts[7] = Vertex{0.0, 1.0, 1.0}
 
+	/* To support arbitrary size lists, we build two lists: one of the element in question and one of the arbitrary size list we wish to embed in the element.
+	Then, we store the memory location of the arbitrary size list into the element in question as a byte array.
+	This isn't the greatest implementation from a Go perspective, but it works well enough as long as we keep the two list variables together (otherwise the arbitrary sized list will be garbage collected).
+	*/
+
 	vertex_indices = make([]VertexIndices, 6)
 	vertex_indices[0] = VertexIndices{0, 1, 2, 3}
 	vertex_indices[1] = VertexIndices{7, 6, 5, 4}
@@ -41,21 +46,6 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 	vertex_indices[3] = VertexIndices{1, 5, 6, 2}
 	vertex_indices[4] = VertexIndices{2, 6, 7, 3}
 	vertex_indices[5] = VertexIndices{3, 7, 4, 0}
-
-	/*
-	nil_array := [16]byte{0, 0, 0, 0, 0, 0, 0, 0}
-
-	faces[0] = Face{'\001', 4, nil_array}
-	faces[1] = Face{'\004', 4, nil_array}
-	faces[2] = Face{'\010', 4, nil_array}
-	faces[3] = Face{'\020', 4, nil_array}
-	faces[4] = Face{'\144', 4, nil_array}
-	faces[5] = Face{'\377', 4, nil_array}
-
-	for i := 0; i < 6; i++ {
-		copy(faces[i].Verts[:], PointerToByteSlice(uintptr(unsafe.Pointer(&vertex_indices[i]))))
-	}
-	*/
 
 	faces[0] = Face{'\001', 4, [8]byte{}}
 	faces[1] = Face{'\004', 4, [8]byte{}}
@@ -65,8 +55,6 @@ func GenerateVertexFaceData() (verts []Vertex, faces []Face, vertex_indices []Ve
 	faces[5] = Face{'\377', 4, [8]byte{}}
 	for i := 0; i < 6; i++ {
 		copy(faces[i].Verts[:], PointerToByteSlice(uintptr(unsafe.Pointer(&vertex_indices[i]))))
-
-		//faces[i].Verts = uintptr(unsafe.Pointer(&vertex_indices[i]))
 	}
 
 	return verts, faces, vertex_indices
@@ -99,7 +87,7 @@ func TestWritePly(t *testing.T) {
 
 	cplyfile := PlyOpenForWriting("test.ply", len(elem_names), elem_names, PLY_ASCII, &version)
 
-	// Note that we don't need a variable for vertex_indices, but we do need to return vertex_indices. Otherwise, the garbage collector will remove them once GenerateVertexFaceData() returns.
+	/* Note that we don't need a variable for vertex_indices, but we do need to return vertex_indices. Otherwise, the garbage collector will remove them once GenerateVertexFaceData() returns. */
 	verts, faces, _ := GenerateVertexFaceData()
 	vert_props, face_props := SetPlyProperties()
 
@@ -196,13 +184,10 @@ func TestReadPLY(t *testing.T) {
 				// print out faces for debugging
 				fmt.Printf("face: %d, list = ", flist[i].Intensity)
 
-
+				/* Here we handle arbitrary sized arrays. We first convert the byte slice storing the location of the C memory to a pointer. Next, we read from C memory space, creating a byte slice, then convert the byte slice to a int32 slice using the ReadPLYListInt32 function. */
 				listptr := ByteSliceToPointer(flist[i].Verts[:])
-
 				list :=
-				ReadPLYList(listptr, int(flist[i].Nverts))
-				//var list []byte 
-				//list := ConvertByteSliceToInt32(flist[i].Verts[:], int(flist[i].Nverts))
+				ReadPLYListInt32(listptr, int(flist[i].Nverts))
 
 				for j := 0; j < int(flist[i].Nverts); j++ {
 					fmt.Printf("%d ", list[j])
