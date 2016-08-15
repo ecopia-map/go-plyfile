@@ -135,6 +135,7 @@ static char *my_alloc();
 
 extern PlyFile *ply_write(FILE *, int, char **, int);
 extern PlyFile *ply_open_for_writing(char *, int, char **, int, float *);
+extern PlyFile *ply_use_fp_for_writing(int, int, char **, int, float *);
 extern void ply_describe_element(PlyFile *, char *, int, int, PlyProperty *);
 extern void ply_describe_property(PlyFile *, char *, PlyProperty *);
 extern void ply_element_count(PlyFile *, char *, int);

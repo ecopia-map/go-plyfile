@@ -225,6 +225,51 @@ PlyFile *ply_open_for_writing(
   return (plyfile);
 }
 
+/******************************************************************************
+Open a polygon file for writing using an existing file desriptor.
+
+Entry:
+  fp         - the existing file descriptor 
+  nelems     - number of elements in object
+  elem_names - list of element names
+  file_type  - file type, either ascii or binary
+
+Exit:
+  version - version number of PLY file
+  returns a file identifier, used to refer to this file, or NULL if error
+******************************************************************************/
+
+PlyFile *ply_use_fp_for_writing(
+  int fd,
+  int nelems,
+  char **elem_names,
+  int file_type,
+  float *version
+)
+{
+  FILE *fp;
+  PlyFile *plyfile;
+  PlyElement *elem;
+
+  fp = fdopen(fd, "wb+");
+
+  if (fp == NULL) {
+    return (NULL);
+  }
+
+  /* create the actual PlyFile structure */
+
+  plyfile = ply_write (fp, nelems, elem_names, file_type);
+  if (plyfile == NULL)
+    return (NULL);
+
+  /* say what PLY file version number we're writing */
+  *version = plyfile->version;
+
+  /* return pointer to the file descriptor */
+  return (plyfile);
+}
+
 
 /******************************************************************************
 Describe an element, including its properties and how many will be written

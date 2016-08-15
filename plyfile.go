@@ -28,6 +28,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"unsafe"
+	"os"
 )
 
 // PLY definitions, for consistency with C code.
@@ -107,6 +108,19 @@ func PlyOpenForWriting(filename string, nelems int, elem_names []string, file_ty
 	}
 
 	plyfile := C.ply_open_for_writing(C.CString(filename), C.int(nelems), &c_elem_names[0], C.int(file_type), (*C.float)(version))
+
+	return plyfile
+}
+
+/* PlyUseExistingForWriting uses an existing file pointer to create a new PLY file and writes in header information, specified by the other parameters. The returned PlyFile object is used to access header information and data stored in the PLY file.  */
+func PlyUseExistingForWriting(fp *os.File, nelems int, elem_names []string, file_type int, version *float32) CPlyFile {
+
+	c_elem_names := make([]*C.char, nelems)
+	for i := 0; i < nelems; i++ {
+		c_elem_names[i] = C.CString(elem_names[i])
+	}
+
+	plyfile := C.ply_use_fp_for_writing(C.int(fp.Fd()), C.int(nelems), &c_elem_names[0], C.int(file_type), (*C.float)(version))
 
 	return plyfile
 }
