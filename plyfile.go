@@ -27,8 +27,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"unsafe"
 	"os"
+	"unsafe"
 )
 
 // PLY definitions, for consistency with C code.
@@ -70,8 +70,8 @@ type PlyProperty struct {
 }
 
 /* ToC converts a PlyProperty go structure to a PlyProperty C structure for passing to C functions */
-func (prop *PlyProperty) ToC() CPlyProperty {
-	var cprop CPlyProperty
+func (prop *PlyProperty) ToC() C.struct_PlyProperty {
+	var cprop C.struct_PlyProperty
 	cprop.name = C.CString(prop.Name)
 	cprop.external_type = C.int(prop.External_type)
 	cprop.internal_type = C.int(prop.Internal_type)
