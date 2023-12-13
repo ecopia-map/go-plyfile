@@ -1,6 +1,6 @@
 # go-plyfile
 
-[![GoDoc](https://godoc.org/github.com/alexbaden/go-plyfile?status.svg)](https://godoc.org/github.com/alexbaden/go-plyfile)
+[![GoDoc](https://godoc.org/github.com/ecopia-map/go-plyfile?status.svg)](https://godoc.org/github.com/ecopia-map/go-plyfile)
 
 Package plyfile provides functions for reading and writing PLY files. The package uses the C plyfile library, originally developed by Greg Turk and released in February 1994. All Go code is provided under the Apache 2.0 license. Greg Turk's code has a separate license (see lib folder).
 
@@ -16,20 +16,20 @@ A very big thanks is owed to Greg Turk for releasing his original plyfile code. 
 
 ## Installation
 
-Run `go get github.com/alexbaden/go-plyfile`
+Run `go get github.com/ecopia-map/go-plyfile`
 
 The install will fail with the following error:
 ```
-# github.com/alexbaden/go-plyfile
+# github.com/ecopia-map/go-plyfile
 /usr/bin/ld: cannot find -lplyfile
-collect2: error: ld returned 1 exit status# github.com/alexbaden/go-plyfile
+collect2: error: ld returned 1 exit status# github.com/ecopia-map/go-plyfile
 /usr/bin/ld: cannot find -lplyfile
 collect2: error: ld returned 1 exit status
 ```
 
-That's fine, you just need to compile the C code with the included makefile. Head over to the `github.com/alexbaden/go-plyfile/lib` directory (e.g. `cd $GOPATH/src/github.com/alexbaden/go-plyfile/lib` ). Compile the C code using `make`.
+That's fine, you just need to compile the C code with the included makefile. Head over to the `github.com/ecopia-map/go-plyfile/lib` directory (e.g. `cd $GOPATH/src/github.com/ecopia-map/go-plyfile/lib` ). Compile the C code using `make`.
 
-Now you can run `go build` and `go install` from the parent directory (`$GOPATH/src/github.com/alexbaden/go-plyfile`).
+Now you can run `go build` and `go install` from the parent directory (`$GOPATH/src/github.com/ecopia-map/go-plyfile`).
 
 From there, you should be good to go. But, just to make sure, run `go test` and verify the two tests (Write and Read) pass.
 
